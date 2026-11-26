@@ -282,7 +282,7 @@ Item {
         recordings: Icons.mic,
         media: Icons.music,
         photos: Icons.photo,
-        printing: Icons.print,
+        printing: Icons.printer,
         toggles: Icons.phone,
         pc_actions: Icons.lock,
         mirroring: Icons.mirror,
