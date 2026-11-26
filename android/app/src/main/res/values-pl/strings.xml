@@ -1696,7 +1696,7 @@
     <string name="your_reports_reply_sent">Wysłano. Jest już przy zgłoszeniu.</string>
     <string name="your_reports_sending">Wysyłanie</string>
     <string name="your_reports_send">Wyślij</string>
+    <string name="print_service_label">Drukarki NectarLink</string>
+    <string name="print_sent">Wysłano do drukarki.</string>
+    <string name="print_failed">Drukowanie nie powiodło się. Sprawdź komputer i spróbuj ponownie.</string>
 </resources>
-
-
-

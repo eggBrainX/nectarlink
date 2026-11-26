@@ -1551,4 +1551,7 @@
     <string name="your_reports_reply_sent">Отправлено. Ответ теперь в отчёте.</string>
     <string name="your_reports_sending">Отправка</string>
     <string name="your_reports_send">Отправить</string>
+    <string name="print_service_label">Принтеры NectarLink</string>
+    <string name="print_sent">Отправлено на принтер.</string>
+    <string name="print_failed">Печать не удалась. Проверьте компьютер и повторите попытку.</string>
 </resources>

@@ -148,6 +148,7 @@ pub use nectarlink_protocol::{
             MAX_THUMB_BATCH as PHOTO_MAX_THUMB_BATCH, MAX_THUMB_BYTES as PHOTO_MAX_THUMB_BYTES,
             READ as PHOTOS_READ, SHOW as PHOTOS_SHOW,
         },
+        print::SHARE as PRINT_SHARE,
         ringer_modes, screen_limits,
         sms::{
             MARK_READ as SMS_MARK_READ, MAX_ATTACHMENT_BYTES as SMS_MAX_ATTACHMENT_BYTES,
