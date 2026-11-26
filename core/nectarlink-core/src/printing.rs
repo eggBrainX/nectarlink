@@ -227,8 +227,13 @@ pub fn print_file(file: &Path, printer: Option<&str>, options: PrintOptions) -> 
     }
     #[cfg(target_os = "windows")]
     {
+        // The shell's Print/PrintTo verb takes no duplex or colour switches
+        // (the printer's own defaults apply), but copies are honoured by
+        // handing the file to the spooler once per copy.
         let script = windows_print_script(printer, file)?;
-        run_output("powershell", &["-NoProfile", "-NonInteractive", "-Command", &script])?;
+        for _ in 0..options.copies.clamp(1, 99) {
+            run_output("powershell", &["-NoProfile", "-NonInteractive", "-Command", &script])?;
+        }
         Ok(())
     }
     #[cfg(not(any(target_os = "linux", target_os = "macos", target_os = "windows")))]
