@@ -1839,6 +1839,9 @@ async fn receive(shared: Arc<Shared>, peer: DeviceId, mut send: SendStream, mut 
                         ref_id: Some(offer.id.clone()),
                     });
                 }
+                let arrived: Vec<(String, u64)> =
+                    offer.files.iter().map(|f| (f.name.clone(), f.size)).collect();
+                crate::printing::print_arrived(&shared, peer, &arrived, &saved).await;
                 TransferState::Done { saved }
             }
             Err(e) => {
