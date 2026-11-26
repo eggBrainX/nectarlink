@@ -191,6 +191,7 @@ pub fn compute_capabilities(
     let mut pc_mirror_enabled = crate::pc_mirror::is_active();
     #[cfg(any(windows, target_os = "linux"))]
     let mut remote_input_enabled = false;
+    let mut printing_enabled = false;
     #[cfg(any(windows, target_os = "linux"))]
     if let Some(node) = node
         && let Ok(devices) = node.paired_devices()
@@ -203,6 +204,9 @@ pub fn compute_capabilities(
                     }
                     if on && name == "remote_input" {
                         remote_input_enabled = true;
+                    }
+                    if on && name == "printing" {
+                        printing_enabled = true;
                     }
                 }
             }
@@ -227,6 +231,13 @@ pub fn compute_capabilities(
             caps.push(nectarlink_core::INPUT_GAMEPAD.into());
         }
         caps.push(nectarlink_core::INPUT_GESTURES.into());
+    }
+    // Printer sharing: only while a paired device may print and this PC
+    // actually has a printer to share.
+    if printing_enabled
+        && nectarlink_core::printing::list_printers().is_ok_and(|list| !list.is_empty())
+    {
+        caps.push(nectarlink_protocol::messages::print::SHARE.into());
     }
     if crate::win::vcam::is_registered() {
         caps.push(nectarlink_core::WEBCAM_ADDON_VCAM.into());
