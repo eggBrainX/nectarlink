@@ -256,6 +256,7 @@ Item {
         recordings: qsTr("Voice recordings"),
         media: qsTr("Media controls"),
         photos: qsTr("Photos"),
+        printing: qsTr("Printing"),
         toggles: qsTr("Phone controls"),
         pc_actions: qsTr("Lock, sleep & wake PC"),
         mirroring: qsTr("Screen mirroring"),
@@ -281,6 +282,7 @@ Item {
         recordings: Icons.mic,
         media: Icons.music,
         photos: Icons.photo,
+        printing: Icons.print,
         toggles: Icons.phone,
         pc_actions: Icons.lock,
         mirroring: Icons.mirror,
@@ -299,7 +301,8 @@ Item {
         call_audio: qsTr("Move a call's sound to this PC: its speakers and microphone."),
         commands: qsTr("Only enable for a phone you trust."),
         remote_files: qsTr("Allow this phone to browse and download shared PC files over mobile data."),
-        unlock: qsTr("Unlock the lock screen with your fingerprint on the phone. Off by default; asks for an administrator once.")
+        unlock: qsTr("Unlock the lock screen with your fingerprint on the phone. Off by default; asks for an administrator once."),
+        printing: qsTr("Print documents from this phone on this PC's printers.")
     })
 
     readonly property var toggleGroups: [
@@ -309,7 +312,7 @@ Item {
         },
         {
             title: qsTr("Files, photos & clipboard"),
-            keys: ["clipboard", "files", "photos", "recordings", "storage", "remote_files"]
+            keys: ["clipboard", "files", "photos", "printing", "recordings", "storage", "remote_files"]
         },
         {
             title: qsTr("Screen, camera & control"),
@@ -342,7 +345,7 @@ Item {
 
     readonly property var allGroupedKeys: [
         "notifications", "messages", "calls", "call_audio", "contacts",
-        "clipboard", "files", "photos", "recordings", "storage", "remote_files",
+        "clipboard", "files", "photos", "printing", "recordings", "storage", "remote_files",
         "media", "toggles", "mirroring", "pc_mirror", "webcam", "pc_actions", "remote_input", "commands",
         // Its own row at the top of the card.
         "unlock"
