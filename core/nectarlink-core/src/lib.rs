@@ -38,6 +38,7 @@ mod pairing;
 pub mod palette;
 mod photos;
 pub mod play_on_phone;
+pub mod printing;
 pub mod relays;
 pub mod remote;
 mod resync;
