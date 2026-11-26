@@ -83,6 +83,9 @@ pub mod types {
     pub const CALL_AUDIO_STOP: &str = "call.audio.stop";
     pub const CONTACTS_LIST: &str = "contacts.list";
     pub const CONTACTS_CHANGED: &str = "contacts.changed";
+    pub const PRINT_LIST: &str = "print.list";
+    pub const PRINT_SUBMIT: &str = "print.submit";
+    pub const PRINT_STATUS: &str = "print.status";
     pub const SMS_THREADS: &str = "sms.threads";
     pub const SMS_MESSAGES: &str = "sms.messages";
     pub const SMS_SEND: &str = "sms.send";
@@ -2929,6 +2932,126 @@ pub struct ContactsList {
 /// Body of `contacts.changed`.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ContactsChanged {}
+
+// ---- Printing (printer sharing) ----
+
+pub mod print {
+    /// Offered by PCs that print a paired phone's documents on their own
+    /// printers.
+    pub const SHARE: &str = "print.share";
+    /// Most printers in one `print.list` answer.
+    pub const MAX_PRINTERS: usize = 64;
+    /// A print job's file name: at most this many bytes (the files service's
+    /// own limit for a name).
+    pub const MAX_NAME_BYTES: usize = 255;
+    /// A printer's name: at most this many bytes.
+    pub const MAX_PRINTER_BYTES: usize = 220;
+    /// The largest file a PC accepts as a print job.
+    pub const MAX_FILE_BYTES: u64 = 512 * 1024 * 1024;
+    /// Job states in `print.status`.
+    pub const STATE_QUEUED: &str = "queued";
+    pub const STATE_PRINTING: &str = "printing";
+    pub const STATE_DONE: &str = "done";
+    pub const STATE_ERROR: &str = "error";
+}
+
+/// One printer in a `print.list` answer.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PrinterInfo {
+    pub name: String,
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub is_default: bool,
+}
+
+/// Body of a `print.list` request (no fields).
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PrintersGet {}
+
+/// Answer to `print.list`: the printers the PC can print to right now.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PrintersList {
+    pub printers: Vec<PrinterInfo>,
+}
+
+/// Body of `print.submit`: announces that the file named here is on its way
+/// as an ordinary files transfer and must be printed when it lands, not just
+/// saved. The phone sends this first, then the file.
+#[derive(Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PrintSubmit {
+    /// The file's name only (no path), as in a files offer.
+    pub name: String,
+    /// The file's size in bytes, as in a files offer.
+    pub size: u64,
+    /// The printer to use; none means the PC's default printer.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub printer: Option<String>,
+    #[serde(default = "one_copy", skip_serializing_if = "is_one")]
+    pub copies: u32,
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub duplex: bool,
+    #[serde(default = "default_color", skip_serializing_if = "std::ops::Not::not")]
+    pub color: bool,
+}
+
+/// Never prints the file or printer name (protocol v0 §11).
+impl std::fmt::Debug for PrintSubmit {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("PrintSubmit")
+            .field("size", &self.size)
+            .field("has_printer", &self.printer.is_some())
+            .field("copies", &self.copies)
+            .field("duplex", &self.duplex)
+            .field("color", &self.color)
+            .finish_non_exhaustive()
+    }
+}
+
+fn one_copy() -> u32 {
+    1
+}
+
+fn is_one(n: &u32) -> bool {
+    *n == 1
+}
+
+fn default_color() -> bool {
+    true
+}
+
+impl PrintSubmit {
+    /// A submit a PC may act on, cleaned up, or `None` when it is malformed:
+    /// a bad file name, an empty or oversized file, or a printer name no
+    /// spooler would produce. Copies are clamped, never a reason to refuse.
+    pub fn sanitized(mut self) -> Option<Self> {
+        let name_ok = !self.name.is_empty()
+            && self.name.len() <= print::MAX_NAME_BYTES
+            && self.name != "."
+            && self.name != ".."
+            && self.name.chars().all(|c| !c.is_control() && c != '/' && c != '\\');
+        if !name_ok || self.size == 0 || self.size > print::MAX_FILE_BYTES {
+            return None;
+        }
+        self.copies = self.copies.clamp(1, 99);
+        self.printer = self.printer.map(|p| p.trim().to_owned()).filter(|p| {
+            !p.is_empty()
+                && p.len() <= print::MAX_PRINTER_BYTES
+                && p.chars().all(|c| !c.is_control())
+        });
+        Some(self)
+    }
+}
+
+/// Body of `print.status`: how an announced print job ended. Sent by the PC
+/// when the file has printed or the job failed.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PrintStatus {
+    /// The job's file name, echoing `print.submit`.
+    pub name: String,
+    /// One of the `print::STATE_*` values.
+    pub state: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub detail: Option<String>,
+}
 
 // ---- Photos (docs/protocol/photos.md) ----
 
