@@ -234,9 +234,7 @@ pub fn compute_capabilities(
     }
     // Printer sharing: only while a paired device may print and this PC
     // actually has a printer to share.
-    if printing_enabled
-        && nectarlink_core::printing::list_printers().is_ok_and(|list| !list.is_empty())
-    {
+    if printing_enabled && nectarlink_core::printing::list_printers().is_ok_and(|list| !list.is_empty()) {
         caps.push(nectarlink_protocol::messages::print::SHARE.into());
     }
     if crate::win::vcam::is_registered() {

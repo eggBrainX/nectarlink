@@ -86,7 +86,11 @@ pub fn lp_args(printer: Option<&str>, options: PrintOptions, file: &Path) -> Vec
     args.push("-o".into());
     args.push(if options.duplex { "sides=two-sided-long-edge".into() } else { "sides=one-sided".into() });
     args.push("-o".into());
-    args.push(if options.color { "print-color-mode=color".into() } else { "print-color-mode=monochrome".into() });
+    args.push(if options.color {
+        "print-color-mode=color".into()
+    } else {
+        "print-color-mode=monochrome".into()
+    });
     args.push("--".into());
     args.push(file.to_string_lossy().into_owned());
     args
@@ -271,10 +275,25 @@ mod tests {
 
     #[test]
     fn lp_args_carry_printer_copies_and_sides() {
-        let args = lp_args(Some("Office"), PrintOptions { copies: 3, duplex: true, color: false }, Path::new("/tmp/a.pdf"));
+        let args = lp_args(
+            Some("Office"),
+            PrintOptions { copies: 3, duplex: true, color: false },
+            Path::new("/tmp/a.pdf"),
+        );
         assert_eq!(
             args,
-            ["-d", "Office", "-n", "3", "-o", "sides=two-sided-long-edge", "-o", "print-color-mode=monochrome", "--", "/tmp/a.pdf"]
+            [
+                "-d",
+                "Office",
+                "-n",
+                "3",
+                "-o",
+                "sides=two-sided-long-edge",
+                "-o",
+                "print-color-mode=monochrome",
+                "--",
+                "/tmp/a.pdf"
+            ]
         );
         let defaulted = lp_args(None, PrintOptions::default(), Path::new("x.txt"));
         assert!(!defaulted.iter().any(|a| a == "-d"));
@@ -341,7 +360,11 @@ fn register_job(peer: DeviceId, submit: &PrintSubmit) {
         (peer, submit.name.clone(), submit.size),
         PendingJob {
             printer: submit.printer.clone(),
-            options: PrintOptions { copies: submit.copies as u16, duplex: submit.duplex, color: submit.color },
+            options: PrintOptions {
+                copies: submit.copies as u16,
+                duplex: submit.duplex,
+                color: submit.color,
+            },
             at: Instant::now(),
         },
     );
@@ -349,8 +372,7 @@ fn register_job(peer: DeviceId, submit: &PrintSubmit) {
 
 fn take_job(peer: &DeviceId, name: &str, size: u64) -> Option<PendingJob> {
     let mut jobs = pending_jobs().lock().unwrap_or_else(|e| e.into_inner());
-    jobs.remove(&(*peer, name.to_owned(), size))
-        .filter(|j| j.at.elapsed() < Duration::from_secs(3600))
+    jobs.remove(&(*peer, name.to_owned(), size)).filter(|j| j.at.elapsed() < Duration::from_secs(3600))
 }
 
 /// Handles `print.*`. Returns false for other types.
@@ -414,14 +436,19 @@ pub(crate) async fn print_arrived(
     for ((name, size), path) in files.iter().zip(saved.iter()) {
         let Some(job) = take_job(&peer, name, *size) else { continue };
         let path = path.clone();
-        let result = tokio::task::spawn_blocking(move || print_file(&path, job.printer.as_deref(), job.options))
-            .await
-            .unwrap_or_else(|e| Err(PrintError::ToolFailed(e.to_string())));
+        let result =
+            tokio::task::spawn_blocking(move || print_file(&path, job.printer.as_deref(), job.options))
+                .await
+                .unwrap_or_else(|e| Err(PrintError::ToolFailed(e.to_string())));
         let status = match &result {
             Ok(()) => PrintStatus { name: name.clone(), state: print::STATE_DONE.into(), detail: None },
             Err(e) => {
                 tracing::warn!(error = %e, "a print job from a phone failed");
-                PrintStatus { name: name.clone(), state: print::STATE_ERROR.into(), detail: Some(e.to_string()) }
+                PrintStatus {
+                    name: name.clone(),
+                    state: print::STATE_ERROR.into(),
+                    detail: Some(e.to_string()),
+                }
             }
         };
         if let Some(session) = shared.session(&peer)

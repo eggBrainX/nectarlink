@@ -4055,15 +4055,9 @@ impl NectarlinkNode {
     ) -> Result<String> {
         let id = parse_id(&id)?;
         let node = self.node.clone();
-        let options = core::printing::PrintOptions {
-            copies: copies.min(u16::MAX as u32) as u16,
-            duplex,
-            color,
-        };
-        self.run(async move {
-            Ok(node.send_print_job(id, path.into(), printer, options).await?)
-        })
-        .await
+        let options =
+            core::printing::PrintOptions { copies: copies.min(u16::MAX as u32) as u16, duplex, color };
+        self.run(async move { Ok(node.send_print_job(id, path.into(), printer, options).await?) }).await
     }
 
     /// Hands off a document to a paired PC and asks the PC to open it with the

@@ -3033,9 +3033,7 @@ impl PrintSubmit {
         }
         self.copies = self.copies.clamp(1, 99);
         self.printer = self.printer.map(|p| p.trim().to_owned()).filter(|p| {
-            !p.is_empty()
-                && p.len() <= print::MAX_PRINTER_BYTES
-                && p.chars().all(|c| !c.is_control())
+            !p.is_empty() && p.len() <= print::MAX_PRINTER_BYTES && p.chars().all(|c| !c.is_control())
         });
         Some(self)
     }

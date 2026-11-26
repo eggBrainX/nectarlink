@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 package app.nectarlink.android.printing
 
 import android.os.ParcelFileDescriptor
