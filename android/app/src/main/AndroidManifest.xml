@@ -262,6 +262,19 @@
         </provider>
 
         <service
+            android:name=".printing.NectarPrintService"
+            android:exported="true"
+            android:label="@string/print_service_label"
+            android:permission="android.permission.BIND_PRINT_SERVICE">
+            <intent-filter>
+                <action android:name="android.printservice.PrintService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.printservice"
+                android:resource="@xml/printservice" />
+        </service>
+
+        <service
             android:name=".clipboard.ClipboardTileService"
             android:exported="true"
             android:icon="@drawable/ic_clipboard"

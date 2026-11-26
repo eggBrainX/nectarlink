@@ -184,6 +184,9 @@
     <string name="transfer_failed">The transfer didn’t go through.</string>
     <string name="transfer_nothing">Those files can’t be opened.</string>
     <string name="transfer_off_for">Files are turned off for %1$s.</string>
+    <string name="print_service_label">NectarLink printers</string>
+    <string name="print_sent">Sent to the printer.</string>
+    <string name="print_failed">Printing failed. Check the PC and try again.</string>
     <string name="transfer_pick_pc">Send to which PC?</string>
     <string name="clip_tile_label">Send clipboard</string>
     <string name="action_send_clipboard">Send clipboard</string>

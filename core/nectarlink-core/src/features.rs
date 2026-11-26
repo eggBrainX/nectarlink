@@ -377,6 +377,8 @@ pub const DEVICE_TOGGLES: &[(&str, bool)] = &[
     ("remote_files", false),
     // Unlocking the PC with the phone's fingerprint is opt-in on both sides.
     ("unlock", false),
+    // Printing a phone's documents on this PC's printers is opt-in.
+    ("printing", false),
 ];
 
 /// The default for a toggle, or `None` if no such toggle exists.
@@ -652,6 +654,12 @@ pub const ANDROID_PAIR_FEATURES: &[FeatureDef] = &[
         id: "pair.files",
         group: FeatureGroup::Files,
         requires: &[peer("files.transfer"), DeviceToggle("files")],
+        partial: None,
+    },
+    FeatureDef {
+        id: "pair.printing",
+        group: FeatureGroup::Files,
+        requires: &[peer("print.share"), DeviceToggle("printing")],
         partial: None,
     },
     FeatureDef {
@@ -962,6 +970,12 @@ pub const FEATURES: &[FeatureDef] = &[
         partial: None,
     },
     FeatureDef {
+        id: "print.from_phone",
+        group: FeatureGroup::Files,
+        requires: &[desktop("print.share", UPDATE), DeviceToggle("printing")],
+        partial: None,
+    },
+    FeatureDef {
         id: "files.recordings",
         group: FeatureGroup::Files,
         requires: &[phone("files.transfer", UPDATE), desktop("recorder", UPDATE), DeviceToggle("recordings")],
@@ -1208,6 +1222,7 @@ mod tests {
         "media.remote",
         "input.inject",
         "deck.actions",
+        "print.share",
         "mirror.view",
         "mirror.listen",
         "camera.virtual",

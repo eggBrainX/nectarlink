@@ -1483,6 +1483,27 @@ class Core(context: Context, private val scope: CoroutineScope) : EventListener 
         }
     }
 
+    /** Printers a paired PC shares right now; empty when sharing is off there or the PC can't be reached. */
+    suspend fun printers(pcId: String): List<app.nectarlink.core.Printer> {
+        val node = node ?: return emptyList()
+        return runCatching { node.printers(pcId) }.getOrDefault(emptyList())
+    }
+
+    /** Prints a document file on a paired PC's printer (printer sharing). */
+    fun printDocument(pcId: String, file: java.io.File, printer: String?, copies: Int, duplex: Boolean, color: Boolean) {
+        scope.launch(Dispatchers.IO) {
+            try {
+                startJob?.join()
+                val node = node ?: return@launch
+                node.sendPrintJob(pcId, file.absolutePath, printer, copies.coerceIn(1, 99).toUInt(), duplex, color)
+                _messages.tryEmit(context.getString(R.string.print_sent))
+            } catch (e: Exception) {
+                Log.w(TAG, "print job failed", e)
+                _messages.tryEmit(context.getString(R.string.print_failed))
+            }
+        }
+    }
+
     private fun send(pcId: String, files: List<FileToSend>, handoff: Boolean = false) {
         if (files.isEmpty()) {
             _messages.tryEmit(context.getString(R.string.transfer_nothing))

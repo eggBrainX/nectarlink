@@ -38,6 +38,7 @@ mod pairing;
 pub mod palette;
 mod photos;
 pub mod play_on_phone;
+pub mod printing;
 pub mod relays;
 pub mod remote;
 mod resync;
@@ -112,11 +113,11 @@ pub use nectarlink_protocol::{
         MirrorRotate, MirrorStart, Notification, NotificationAction, NotificationChatMessage,
         NotificationConversation, NotificationLive, PcAudioSet, PcWakeInfo, PhoneApp, PhoneToggleSet,
         PhoneToggleValue, PhoneToggles, PhotoAlbum, PhotoItem, PhotoNew as Photo, PhotoThumb, PointerAt,
-        PointerEdge, PointerMove, PointerScreen, PowerLevel, ScreenCorners, ScreenRect, ScreenShape,
-        SmsAttachment, SmsMessage, SmsPart, SmsThread, StorageChanged, StorageDelete, StorageEntries,
-        StorageEntry, StorageList, StorageMkdir, StorageRead, StorageReadMeta, StorageRename,
-        StorageWriteAccept, StorageWriteDone, StorageWriteOffer, TaskNotify, TouchAction, WatchFile,
-        WebcamConfig, WebcamStart,
+        PointerEdge, PointerMove, PointerScreen, PowerLevel, PrintSubmit, PrinterInfo, ScreenCorners,
+        ScreenRect, ScreenShape, SmsAttachment, SmsMessage, SmsPart, SmsThread, StorageChanged,
+        StorageDelete, StorageEntries, StorageEntry, StorageList, StorageMkdir, StorageRead, StorageReadMeta,
+        StorageRename, StorageWriteAccept, StorageWriteDone, StorageWriteOffer, TaskNotify, TouchAction,
+        WatchFile, WebcamConfig, WebcamStart,
         calls::{
             AUDIO as CALLS_AUDIO, AUDIO_RATE as CALLS_AUDIO_RATE, CONTROL as CALLS_CONTROL,
             DIAL as CALLS_DIAL, IN_CALL as CALLS_IN_CALL, LOG as CALLS_LOG, SHOW as CALLS_SHOW,
@@ -147,6 +148,7 @@ pub use nectarlink_protocol::{
             MAX_THUMB_BATCH as PHOTO_MAX_THUMB_BATCH, MAX_THUMB_BYTES as PHOTO_MAX_THUMB_BYTES,
             READ as PHOTOS_READ, SHOW as PHOTOS_SHOW,
         },
+        print::SHARE as PRINT_SHARE,
         ringer_modes, screen_limits,
         sms::{
             MARK_READ as SMS_MARK_READ, MAX_ATTACHMENT_BYTES as SMS_MAX_ATTACHMENT_BYTES,

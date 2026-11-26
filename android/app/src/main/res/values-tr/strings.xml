@@ -1678,7 +1678,7 @@
     <string name="your_reports_reply_sent">Gönderildi. Artık raporda.</string>
     <string name="your_reports_sending">Gönderiliyor</string>
     <string name="your_reports_send">Gönder</string>
+    <string name="print_service_label">NectarLink yazıcılar</string>
+    <string name="print_sent">Yazıcıya gönderildi.</string>
+    <string name="print_failed">Yazdırma başarısız. Bilgisayarı kontrol edip tekrar deneyin.</string>
 </resources>
-
-
-

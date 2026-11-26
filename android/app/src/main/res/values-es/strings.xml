@@ -1689,4 +1689,7 @@
     <string name="your_reports_reply_sent">Enviado. Ya está en el informe.</string>
     <string name="your_reports_sending">Enviando</string>
     <string name="your_reports_send">Enviar</string>
+    <string name="print_service_label">Impresoras NectarLink</string>
+    <string name="print_sent">Enviado a la impresora.</string>
+    <string name="print_failed">La impresión falló. Revisa el PC e inténtalo de nuevo.</string>
 </resources>

@@ -1694,7 +1694,7 @@
     <string name="your_reports_reply_sent">Надіслано. Відповідь тепер у звіті.</string>
     <string name="your_reports_sending">Надсилання</string>
     <string name="your_reports_send">Надіслати</string>
+    <string name="print_service_label">Принтери NectarLink</string>
+    <string name="print_sent">Надіслано на принтер.</string>
+    <string name="print_failed">Не вдалося надрукувати. Перевірте комп’ютер і спробуйте ще раз.</string>
 </resources>
-
-
-

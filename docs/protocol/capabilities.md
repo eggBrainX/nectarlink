@@ -106,6 +106,7 @@ capability is missing.
 | `input.gamepad` | Plugs in a game controller for a phone's Gamepad ([remote input](remote.md) §3.1) | app update |
 | `input.gestures` | Does touchpad gestures from the phone: pinch, three and four fingers ([remote input](remote.md) §3.2) | app update |
 | `recorder` | Saves and converts voice recordings from a phone ([recorder](recorder.md)) | app update |
+| `print.share` | Prints documents a paired phone sends on this PC's printers ([printing service](printing.md)) | app update |
 | `deck.actions` | Shares its Deck layout and live tile state and runs Deck actions ([deck](deck.md)) | app update |
 | `pc.audio` | Reports active audio output devices in `deck.state` and accepts `pc.audio.set` volume/mute changes ([deck](deck.md)) | app update |
 | `camera.virtual` | Receives and decodes a phone's camera stream ([webcam](webcam.md)) | app update |

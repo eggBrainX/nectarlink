@@ -1607,4 +1607,7 @@
     <string name="your_reports_reply_sent">Đã gửi. Câu trả lời đã có trong báo cáo.</string>
     <string name="your_reports_sending">Đang gửi</string>
     <string name="your_reports_send">Gửi</string>
+    <string name="print_service_label">Máy in NectarLink</string>
+    <string name="print_sent">Đã gửi tới máy in.</string>
+    <string name="print_failed">In thất bại. Hãy kiểm tra PC và thử lại.</string>
 </resources>

@@ -1679,4 +1679,7 @@
     <string name="your_reports_reply_sent">Gesendet. Es steht jetzt beim Bericht.</string>
     <string name="your_reports_sending">Wird gesendet</string>
     <string name="your_reports_send">Senden</string>
+    <string name="print_service_label">NectarLink-Drucker</string>
+    <string name="print_sent">An den Drucker gesendet.</string>
+    <string name="print_failed">Drucken fehlgeschlagen. Prüfen Sie den PC und versuchen Sie es erneut.</string>
 </resources>

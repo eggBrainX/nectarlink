@@ -1405,6 +1405,13 @@ pub struct CallLogEntry {
     pub photo: Option<Vec<u8>>,
 }
 
+/// A printer on a paired PC (docs/protocol/printing.md).
+#[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
+pub struct Printer {
+    pub name: String,
+    pub is_default: bool,
+}
+
 /// One phone number on a contact (docs/protocol/contacts.md).
 #[derive(Clone, PartialEq, Eq, uniffi::Record)]
 pub struct ContactNumber {
@@ -4017,6 +4024,40 @@ impl NectarlinkNode {
         let id = parse_id(&id)?;
         let node = self.node.clone();
         self.run(async move { Ok(node.send_files(id, files).await?) }).await
+    }
+
+    /// Lists a paired PC's shared printers, default first
+    /// (docs/protocol/printing.md).
+    pub async fn printers(&self, id: String) -> Result<Vec<Printer>> {
+        let id = parse_id(&id)?;
+        let node = self.node.clone();
+        self.run(async move {
+            Ok(node
+                .printers(id)
+                .await?
+                .into_iter()
+                .map(|p| Printer { name: p.name, is_default: p.is_default })
+                .collect())
+        })
+        .await
+    }
+
+    /// Prints a file from this phone on a paired PC's printer; returns the
+    /// transfer's ID. The outcome arrives as a `print.status` message.
+    pub async fn send_print_job(
+        &self,
+        id: String,
+        path: String,
+        printer: Option<String>,
+        copies: u32,
+        duplex: bool,
+        color: bool,
+    ) -> Result<String> {
+        let id = parse_id(&id)?;
+        let node = self.node.clone();
+        let options =
+            core::printing::PrintOptions { copies: copies.min(u16::MAX as u32) as u16, duplex, color };
+        self.run(async move { Ok(node.send_print_job(id, path.into(), printer, options).await?) }).await
     }
 
     /// Hands off a document to a paired PC and asks the PC to open it with the

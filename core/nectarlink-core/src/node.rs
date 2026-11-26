@@ -4003,6 +4003,44 @@ impl Node {
         crate::contacts::list(&self.shared, &session, query, offset, limit).await
     }
 
+    // ---- Printing (printer sharing) ----
+
+    /// Lists a paired PC's printers, default first.
+    pub async fn printers(&self, peer: DeviceId) -> Result<Vec<crate::PrinterInfo>> {
+        let session = self.connected(&peer)?;
+        crate::printing::list_remote(&self.shared, &session).await
+    }
+
+    /// Prints one of this device's files on a paired PC: announces the job
+    /// (`print.submit`), then sends the file as an ordinary transfer; the PC
+    /// prints it when it lands and answers with `print.status`.
+    pub async fn send_print_job(
+        &self,
+        peer: DeviceId,
+        path: std::path::PathBuf,
+        printer: Option<String>,
+        options: crate::printing::PrintOptions,
+    ) -> Result<String> {
+        let name = path
+            .file_name()
+            .map(|n| n.to_string_lossy().into_owned())
+            .ok_or_else(|| Error::Protocol("a print job needs a file name".into()))?;
+        let size = tokio::fs::metadata(&path).await?.len();
+        let submit = crate::PrintSubmit {
+            name,
+            size,
+            printer,
+            copies: options.copies as u32,
+            duplex: options.duplex,
+            color: options.color,
+        };
+        self.request(peer, Envelope::new(types::PRINT_SUBMIT, &submit)?)
+            .await
+            .and_then(|reply| Ok(reply.expect(types::OK)?))?;
+        let files = transfer::outgoing_paths(&[path])?;
+        self.send_files(peer, files).await
+    }
+
     // ---- Photos (docs/protocol/photos.md) ----
 
     /// A photo or screenshot just appeared on this phone; announced to every
