@@ -1406,7 +1406,7 @@ pub struct CallLogEntry {
 }
 
 /// A printer on a paired PC (docs/protocol/printing.md).
-#[derive(Clone, PartialEq, Eq, uniffi::Record)]
+#[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
 pub struct Printer {
     pub name: String,
     pub is_default: bool,

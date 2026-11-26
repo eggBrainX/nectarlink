@@ -44,7 +44,7 @@ class NectarPrintService : PrintService() {
         NectarDiscoverySession()
 
     override fun onPrintJobQueued(printJob: PrintJob) {
-        val target = parseTarget(printJob.info.printerId)
+        val target = printJob.info.printerId?.let { parseTarget(it) }
         if (target == null) {
             printJob.fail(getString(R.string.print_failed))
             return

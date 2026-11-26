@@ -146,10 +146,10 @@ pub fn parse_windows_printers(json: &str) -> Result<Vec<Printer>, PrintError> {
 /// The PowerShell script that prints `file` through the shell PrintTo verb,
 /// on `printer` or the default printer when `printer` is `None`.
 pub fn windows_print_script(printer: Option<&str>, file: &Path) -> Result<String, PrintError> {
-    if let Some(name) = printer {
-        if !valid_printer_name(name) {
-            return Err(PrintError::InvalidPrinterName(name.to_owned()));
-        }
+    if let Some(name) = printer
+        && !valid_printer_name(name)
+    {
+        return Err(PrintError::InvalidPrinterName(name.to_owned()));
     }
     let path = file.to_string_lossy().replace('\'', "''");
     Ok(match printer {
@@ -238,87 +238,6 @@ pub fn print_file(file: &Path, printer: Option<&str>, options: PrintOptions) -> 
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn lpstat_names_parse_and_trim() {
-        let out = "OfficePrinter\n\n  PDF  \nHP_LaserJet\n";
-        assert_eq!(parse_lpstat_printers(out), ["OfficePrinter", "PDF", "HP_LaserJet"]);
-        assert!(parse_lpstat_printers("").is_empty());
-    }
-
-    #[test]
-    fn lpstat_default_parses_both_shapes() {
-        assert_eq!(
-            parse_lpstat_default("system default destination: OfficePrinter\n").as_deref(),
-            Some("OfficePrinter")
-        );
-        assert_eq!(parse_lpstat_default("no system default destination\n"), None);
-        assert_eq!(parse_lpstat_default(""), None);
-    }
-
-    #[test]
-    fn windows_printers_parse_array_object_and_empty() {
-        let many = parse_windows_printers(
-            r#"[{"Name":"HP LaserJet","Default":true},{"Name":"Microsoft Print to PDF","Default":false}]"#,
-        )
-        .unwrap();
-        assert_eq!(many.len(), 2);
-        assert!(many[0].is_default);
-        let one = parse_windows_printers(r#"{"Name":"Only One","Default":false}"#).unwrap();
-        assert_eq!(one.len(), 1);
-        assert!(parse_windows_printers("").unwrap().is_empty());
-        assert!(parse_windows_printers("not json").is_err());
-    }
-
-    #[test]
-    fn lp_args_carry_printer_copies_and_sides() {
-        let args = lp_args(
-            Some("Office"),
-            PrintOptions { copies: 3, duplex: true, color: false },
-            Path::new("/tmp/a.pdf"),
-        );
-        assert_eq!(
-            args,
-            [
-                "-d",
-                "Office",
-                "-n",
-                "3",
-                "-o",
-                "sides=two-sided-long-edge",
-                "-o",
-                "print-color-mode=monochrome",
-                "--",
-                "/tmp/a.pdf"
-            ]
-        );
-        let defaulted = lp_args(None, PrintOptions::default(), Path::new("x.txt"));
-        assert!(!defaulted.iter().any(|a| a == "-d"));
-        assert!(defaulted.iter().any(|a| a == "sides=one-sided"));
-    }
-
-    #[test]
-    fn copies_clamp_to_the_spooler_range() {
-        assert_eq!(PrintOptions { copies: 0, ..Default::default() }.clamped().copies, 1);
-        assert_eq!(PrintOptions { copies: 500, ..Default::default() }.clamped().copies, 99);
-    }
-
-    #[test]
-    fn windows_script_quotes_and_rejects_bad_names() {
-        let s = windows_print_script(Some("HP LaserJet"), Path::new("C:\\docs\\a.pdf")).unwrap();
-        assert!(s.contains("PrintTo") && s.contains("\"HP LaserJet\""));
-        let d = windows_print_script(None, Path::new("C:\\docs\\a.pdf")).unwrap();
-        assert!(d.contains("-Verb Print "));
-        assert!(windows_print_script(Some("bad\"; rm"), Path::new("x")).is_err());
-        assert!(windows_print_script(Some(""), Path::new("x")).is_err());
-        assert!(!valid_printer_name("a\nb"));
-        assert!(valid_printer_name("HP LaserJet Pro"));
-    }
-}
-
 // ---- Sessions: a phone asking, this PC answering ----
 
 use std::{
@@ -348,8 +267,11 @@ struct PendingJob {
     at: Instant,
 }
 
-fn pending_jobs() -> &'static Mutex<HashMap<(DeviceId, String, u64), PendingJob>> {
-    static JOBS: OnceLock<Mutex<HashMap<(DeviceId, String, u64), PendingJob>>> = OnceLock::new();
+/// Pending jobs by (device, file name, size).
+type JobMap = Mutex<HashMap<(DeviceId, String, u64), PendingJob>>;
+
+fn pending_jobs() -> &'static JobMap {
+    static JOBS: OnceLock<JobMap> = OnceLock::new();
     JOBS.get_or_init(|| Mutex::new(HashMap::new()))
 }
 
@@ -471,4 +393,85 @@ pub(crate) async fn list_remote(shared: &Shared, session: &Session) -> Result<Ve
         session.request(env, crate::session::REQUEST_TIMEOUT).await?.expect_body(types::PRINT_LIST)?;
     printers.truncate(print::MAX_PRINTERS);
     Ok(printers)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn lpstat_names_parse_and_trim() {
+        let out = "OfficePrinter\n\n  PDF  \nHP_LaserJet\n";
+        assert_eq!(parse_lpstat_printers(out), ["OfficePrinter", "PDF", "HP_LaserJet"]);
+        assert!(parse_lpstat_printers("").is_empty());
+    }
+
+    #[test]
+    fn lpstat_default_parses_both_shapes() {
+        assert_eq!(
+            parse_lpstat_default("system default destination: OfficePrinter\n").as_deref(),
+            Some("OfficePrinter")
+        );
+        assert_eq!(parse_lpstat_default("no system default destination\n"), None);
+        assert_eq!(parse_lpstat_default(""), None);
+    }
+
+    #[test]
+    fn windows_printers_parse_array_object_and_empty() {
+        let many = parse_windows_printers(
+            r#"[{"Name":"HP LaserJet","Default":true},{"Name":"Microsoft Print to PDF","Default":false}]"#,
+        )
+        .unwrap();
+        assert_eq!(many.len(), 2);
+        assert!(many[0].is_default);
+        let one = parse_windows_printers(r#"{"Name":"Only One","Default":false}"#).unwrap();
+        assert_eq!(one.len(), 1);
+        assert!(parse_windows_printers("").unwrap().is_empty());
+        assert!(parse_windows_printers("not json").is_err());
+    }
+
+    #[test]
+    fn lp_args_carry_printer_copies_and_sides() {
+        let args = lp_args(
+            Some("Office"),
+            PrintOptions { copies: 3, duplex: true, color: false },
+            Path::new("/tmp/a.pdf"),
+        );
+        assert_eq!(
+            args,
+            [
+                "-d",
+                "Office",
+                "-n",
+                "3",
+                "-o",
+                "sides=two-sided-long-edge",
+                "-o",
+                "print-color-mode=monochrome",
+                "--",
+                "/tmp/a.pdf"
+            ]
+        );
+        let defaulted = lp_args(None, PrintOptions::default(), Path::new("x.txt"));
+        assert!(!defaulted.iter().any(|a| a == "-d"));
+        assert!(defaulted.iter().any(|a| a == "sides=one-sided"));
+    }
+
+    #[test]
+    fn copies_clamp_to_the_spooler_range() {
+        assert_eq!(PrintOptions { copies: 0, ..Default::default() }.clamped().copies, 1);
+        assert_eq!(PrintOptions { copies: 500, ..Default::default() }.clamped().copies, 99);
+    }
+
+    #[test]
+    fn windows_script_quotes_and_rejects_bad_names() {
+        let s = windows_print_script(Some("HP LaserJet"), Path::new("C:\\docs\\a.pdf")).unwrap();
+        assert!(s.contains("PrintTo") && s.contains("\"HP LaserJet\""));
+        let d = windows_print_script(None, Path::new("C:\\docs\\a.pdf")).unwrap();
+        assert!(d.contains("-Verb Print "));
+        assert!(windows_print_script(Some("bad\"; rm"), Path::new("x")).is_err());
+        assert!(windows_print_script(Some(""), Path::new("x")).is_err());
+        assert!(!valid_printer_name("a\nb"));
+        assert!(valid_printer_name("HP LaserJet Pro"));
+    }
 }
