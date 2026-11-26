@@ -795,6 +795,7 @@ async fn handle(
         t if t.starts_with("call.audio.") && crate::call_audio::handle(shared, session, &env).await? => {}
         t if t.starts_with("call.") && crate::calls::handle(shared, session, &env).await? => {}
         t if t.starts_with("contacts.") && crate::contacts::handle(shared, session, &env).await? => {}
+        t if t.starts_with("print.") && crate::printing::handle(shared, session, &env).await? => {}
         t if t.starts_with("sms.") && crate::sms::handle(shared, session, &env).await? => {}
         t if (t.starts_with("mirror.") || t.starts_with("pointer."))
             && crate::mirror::handle(shared, session, &env).await? => {}
